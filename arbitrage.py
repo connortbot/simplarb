@@ -44,7 +44,7 @@ Bovada bovada.lv [???] 21+
 
 # An api key is emailed to you when you sign up to a plan
 # Get a free API key at https://api.the-odds-api.com/
-API_KEY = '630755848676a5f911e7fed3df165dbc'
+API_KEY = ''
 
 SPORT = 'upcoming' # use the sport_key from the /sports endpoint below, or use 'upcoming' to see the next 8 games across all sports
 #americanbasketball_nba, americanfootball_nfl, icehockey_nhl, 
