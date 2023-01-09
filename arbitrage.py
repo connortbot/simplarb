@@ -6,16 +6,15 @@ SPORTS = {
     "NBA": 'basketball_nba',
     "NHL": 'icehockey_nhl',
     "NFL": 'americanfootball_nfl'
-    }
+}
 
 
 # NOT ACCESSIBLE TO CANADIANS: BANNED_PLATFORMS = ['Betfair', 'William Hill (US)']
 
 # Ontario, 18yo
-BANNED_PLATFORMS = ['Betfair','William Hill (US)', 'Unibet', 'SugarHouse', 'DraftKings', 'Barstool Sportsbook', 'TwinSpires', 'WynnBET', 'FanDuel', 'Bovada', 'BetMGM', 'FOX Bet', 'MyBookie.ag', 'BetRivers',
-                    'BetUS','SuperBook']
+BANNED_PLATFORMS = [] # place strings here of the platforms that won't be scanned.
 
-"""
+""" INCOMPLETE LIST
 NOTE: Platforms have varying age restrictions, depending on country of origin.
 on.pointsbet.ca [Canadian] 19+
 Unibet on.unibet.ca [Canadian] 19+
