@@ -3,25 +3,26 @@ import requests
 
 SPORTS = {
     "all": 'upcoming',
-    "NBA": 'basketball_nba',
+    "NBA": 'americanbasketball_nba',
     "NHL": 'icehockey_nhl',
-    "NFL": 'americanfootball_nfl'
-}
+    "NFL": 'americanfootball_nfl',
+    "Serie A": 'soccer_italy_serie_a'
+    }
 
 
 # NOT ACCESSIBLE TO CANADIANS: BANNED_PLATFORMS = ['Betfair', 'William Hill (US)']
 
 # Ontario, 18yo
-BANNED_PLATFORMS = [] # place strings here of the platforms that won't be scanned.
+#BANNED_PLATFORMS = ['Betfair','William Hill (US)', 'Unibet', 'SugarHouse', 'DraftKings', 'Barstool Sportsbook', 'TwinSpires', 'WynnBET', 'FanDuel', 'Bovada', 'BetMGM', 'FOX Bet']
+BANNED_PLATFORMS = []
 
-""" INCOMPLETE LIST
+"""
 NOTE: Platforms have varying age restrictions, depending on country of origin.
 on.pointsbet.ca [Canadian] 19+
 Unibet on.unibet.ca [Canadian] 19+
 SugarHouse on.betrivers.ca [Canadian] 19+
 DraftKings sportsbook.draftkings.com [Canadian] 19+
 BetMGM on.betmgm.ca [Canadian] 19+
-BetRivers on.betrivers.ca [Canadian] 19+
 
 Bodog bodog.eu [EU] [18+]
 LowVig.ag www.lowvig.ag [Antiguan+Barbudan] 18+
@@ -29,14 +30,11 @@ BetOnline.ag www.betonline.ag [Panaman] 18+
 BetUS www.betus.com [Costa Rican/Canadian/International] 18+
 GTbets gtbets.ag [Curacao] 18+
 
-MyBookie.ag mybookie.ag [???] 21+
-
 US platforms require 21+, and are only available in the states (many even limited to specific states. Must be accessed with a VPN)
 Barstool Sportsbook www.barstoolsportsbook.com [US] 21+
 TwinSpires www.twinspires.com [US] 21+
 WynnBET www.wynnbet.com [US] 21+
 FOX Bet www.foxbet.com [US] 21+
-SuperBook superbook.com [US] 21+
 
 Bovada bovada.lv [???] 21+
 """
@@ -57,7 +55,7 @@ ODDS_FORMAT = 'decimal' # decimal | american
 DATE_FORMAT = 'iso' # iso | unix
 
 stake = input("STAKE: ")
-s = input("Filter (all/NBA/NHL/NFL):")
+s = input("Filter (all/NBA/NHL/NFL/Serie A):")
 SPORT = SPORTS[s]
 
 
@@ -101,6 +99,7 @@ DATA = req()
 gamenum = 0
 for game in DATA:
     print(" ")
+    draw_odds = 0
     full = []
     team1 = game["away_team"]
     team2 = game["home_team"]
@@ -108,17 +107,27 @@ for game in DATA:
     percentages = []
     print("Game "+str(gamenum+1)+": "+bill)
     for book in game["bookmakers"]:
+        if len(book["markets"][0]["outcomes"]) > 2: #drawable game format:
+            draw_odds = book["markets"][0]["outcomes"][2]["price"]
         away_odds = book["markets"][0]["outcomes"][0]["price"]
         home_odds = book["markets"][0]["outcomes"][1]["price"]
-        full.append([book["title"],away_odds,home_odds])
-
+        full.append([book["title"],away_odds,home_odds,draw_odds])
     allcombinations = []
-    for o in full:
-        ix = full.index(o)
-        for entry in range(0,len(full)):
-            chance = ((1/float(o[1]))+(1/float(full[entry][2])))*100
-            percentages.append(chance)
-            allcombinations.append([o[0],full[entry][0],chance,float(o[1]),float(full[entry][2])])
+    if draw_odds == 0:
+        for o in full:
+            for entry in range(0,len(full)):
+                chance = ((1/float(o[1]))+(1/float(full[entry][2])))*100
+                percentages.append(chance)
+                allcombinations.append([o[0],full[entry][0],chance,float(o[1]),float(full[entry][2]),float(full[entry][3])])
+    else:
+        for a in full:
+            for h in range(0,len(full)):
+                for d in range(0,len(full)):
+                    chance = ((1/float(a[1]))+(1/float(full[h][2]))+(1/float(full[d][3])))*100
+                    percentages.append(chance)
+                    allcombinations.append([a[0],full[h][0],full[d][0],chance,float(a[1]),float(full[h][2]),float(full[d][3])])
+    print("Checked possibilities and combinations: "+str(len(allcombinations)))
+
     unverified = True
     if len(percentages) == 0:
         best_odd = "null"
@@ -143,19 +152,28 @@ for game in DATA:
         if best_odd == "null":
             unverified = False
         
-            
     
     print("Analysis:")
     if best_odd == "null":
         print("There were no available bets on allowed platforms.")
         continue
-    if best_odd[2] > 100:
-        print("There is no available arbitrage bet.")
+    if best_odd[5] == 0:
+        if best_odd[2] > 100:
+            print("There is no available arbitrage bet. (min "+str(best_odd[2])+")")
+        else:
+            print("There is an arbitrage bet for "+str(best_odd[2])+"%")
+        print("=> Profit is "+str(float(stake)/(best_odd[2]/100)-float(stake)))
+        print("=> Optimal bet for "+team1+" is "+str((float(stake)*(1/float(best_odd[3])))/(best_odd[2]/100))+" @ "+best_odd[0]+"   ["+str(best_odd[3])+"]")
+        print("=> Optimal bet for "+team2+" is "+str((float(stake)*(1/float(best_odd[4])))/(best_odd[2]/100))+" @ "+best_odd[1]+"   ["+str(best_odd[4])+"]")
     else:
-        print("There is an arbitrage bet for "+str(best_odd[2])+"%")
-    print("=> Profit is "+str(float(stake)/(best_odd[2]/100)-float(stake)))
-    print("=> Optimal bet for "+team1+" is "+str((float(stake)*(1/float(best_odd[3])))/(best_odd[2]/100))+" @ "+best_odd[0]+"   ["+str(best_odd[3])+"]")
-    print("=> Optimal bet for "+team2+" is "+str((float(stake)*(1/float(best_odd[4])))/(best_odd[2]/100))+" @ "+best_odd[1]+"   ["+str(best_odd[4])+"]")
+        if best_odd[3] > 100:
+            print("There is no available arbitrage bet. (min "+str(best_odd[3])+")")
+        else:
+            print("There is an arbitrage bet for "+str(best_odd[2])+"%")
+        print("=> Profit is "+str((float(stake)/(1+(best_odd[4]/best_odd[5])+(best_odd[4]/best_odd[6])))*best_odd[4]-float(stake)))
+        print("=> Optimal bet for "+team1+" is "+str(float(stake)/(1+(best_odd[4]/best_odd[5])+(best_odd[4]/best_odd[6])))+" @ "+best_odd[0]+"   ["+str(best_odd[4])+"]")
+        print("=> Optimal bet for "+team2+" is "+str(float(stake)/(1+(best_odd[5]/best_odd[4])+(best_odd[5]/best_odd[6])))+" @ "+best_odd[1]+"   ["+str(best_odd[5])+"]")
+        print("=> Optimal bet for Draw is "+str(float(stake)/(1+(best_odd[6]/best_odd[4])+(best_odd[6]/best_odd[5])))+" @ "+best_odd[2]+"   ["+str(best_odd[6])+"]")
 
     gamenum += 1
 
