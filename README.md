@@ -1,5 +1,5 @@
 # simplarb
-SimplArb pulls games from across the world, across every major profession league, and the best arbitrage bets to make.
+SimplArb pulls games from across the world, across every major professional league, and the best arbitrage bets to make.
 Using theOdds API, SimplArb searches hundreds of Casinos and Sportsbooks around the world, and compiles the best, most profitable bets cleanly and quickly for every game around the world in any pro level.
 
 NOTE: This is not endorsing nor encouraging illegal casino/sportsbook access. Note that in Canada+many US states, many quality sportsbooks have age restrictions AND/OR region restrictions. As far as I know, VPN use will get you banned, and may be illegal.
